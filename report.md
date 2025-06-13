@@ -107,3 +107,31 @@
 
 ## STEP6: Result Visualization
 
+
+## Conclusion & Analysis
+
+* 分群 pipeline: 
+	本次分群作業從 data visualization 出發, 透過 pairplot 初步觀察特徵之間的分布與潛在分群結構. 接著進行 data preprocessing, 包含缺失值移除、異常值處理（使用 IQR, threshold 設為 12）與標準化（StandardScaler）, 確保資料分布一致且不受極端值干擾. 完成資料清洗後, 嘗試多種分群演算法（共 10 種）, 最後以內部指標（Silhouette Score、Calinski-Harabasz Score）及外部指標（Public data score）綜合比較, 選定最佳模型, 並進行 PCA 與 UMAP 的 2D 可視化以輔助評估分群結構的合理性. 
+
+* Preprocessing 的有效性:
+	在 preprocessing 階段, 我使用了 IQR 方法來移除異常值, 並將 `IQR_THRESHOLD` 設為 12. 這個方法使 public dataset score 從 0.88 提升至 0.90, 顯示出 preprocessing 在提升分群品質方面的有效性. IQR 方法能夠有效地去除極端值, 減少對 K-means 分群結果的負面影響, 並且在特徵標準化後, 資料分布更為均勻, 有助於 K-means 算法的收斂與分群效果.
+
+* Model 選擇:
+	經實驗比較 , `K-means（init='random'）` 在 public dataset 上的整體表現最為穩定且分數最高（或次高）, 在 Silhouette Score（0.6098）與 Calinski-Harabasz Score（36334.95）上優於所有其他模型, 在 Public data score 上也僅略低於 Agglomerative。其餘模型如 GMM、DBSCAN、OPTICS 雖各有特點, 但受限於資料特性（偏向球狀分布、維度不高）與參數敏感性, 整體分群品質與穩定性皆不如 K-means。因此, 綜合效率、表現與解釋性, K-means 被選為最終模型。
+
+* 最終結果分析:
+
+	1. Public dataset: 畢竟不論是 model 還是參數的調整, 都是針對 public dataset 進行的, 所以在 public dataset 上分群的表現還不錯. Public dataset 經降維後的 PCA 與 UMAP 結果皆顯示出明顯的分群分布, 群體邊界清晰, 說明 K-means 對此資料集的適應性極佳. 同時助教提供的 Public Data Score 為 0.9032 相較於其他方法可以說是相當高的分數, 代表 K-means 在此資料集上成功捕捉到潛在的分群結構. 在評估指標方面, K-means 的 Silhouette Score 為 0.6098 和 Calinski-Harabasz Score 達 36334 代表了群內緊密且群間明確, 至少是實驗各種方法中表現最好的. 整體而言, K-means 成功揭示了原始資料中潛在的分群結構. 
+
+	2. Private dataset: 相較於 public dataset, Private dataset 的 feature 維度提升至 6 並要分 23 個群, 這對 K-means 來說分群挑戰加劇. 儘管無法直接得知 private data score, 但從 Silhouette Score（0.5241）和 Calinski-Harabasz Score（94131.3844）來看, 分群品質仍然最眾多實驗方法中表現較佳. 這顯示 K-means 在高維資料上仍能保持一定的分群效果, 雖然可能不如在 public dataset 上那麼明顯. UMAP 投影下群與群之間略有重疊, 說明了高維資料的複雜性與 K-means 在此情境下的局限性. 但整體仍能觀察出合理的聚類輪廓.
+
+	3. 統整: public dataset 在我的 preprocessing 與 K-means 分群下擁有還不錯的表現, 但 private dataset 可預期的因為增加維度, 使的 K-means 分群的效果不如 public dataset. 但整體而言, K-means 在兩個資料集上都能夠捕捉到潛在的分群結構, 並且在評估指標上相對其他方式表現較佳.
+
+## Some notes (一些用了但沒有效果的實驗)
+
+1. data 取 log
+2. 對 feature 進行加權
+3. 使用 PCA 或 KernelPCA
+4. 先對某些維度進行初步 clustering, 再做後續擴展
+
+
